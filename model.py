@@ -13,9 +13,12 @@ from utils import capture_init, center_trim
 
 
 class BLSTM(nn.Module):
-    def __init__(self, dim, layers=1):
+    def __init__(self, dim, layers=1, use_gru=False):
         super().__init__()
-        self.lstm = nn.LSTM(bidirectional=True, num_layers=layers, hidden_size=dim, input_size=dim)
+        if use_gru:
+            self.lstm = nn.GRU(bidirectional=True, num_layers=layers, hidden_size=dim, input_size=dim)
+        else:
+            self.lstm = nn.LSTM(bidirectional=True, num_layers=layers, hidden_size=dim, input_size=dim)
         self.linear = nn.Linear(2 * dim, dim)
 
     def forward(self, x):
@@ -73,7 +76,8 @@ class Demucs(nn.Module):
                  stride=4,
                  growth=2.,
                  lstm_layers=2,
-                 context=3):
+                 context=3,
+                 use_gru=False):
         """
         Args:
             sources (int): number of sources to separate
@@ -156,7 +160,7 @@ class Demucs(nn.Module):
         channels = in_channels
 
         if lstm_layers:
-            self.lstm = BLSTM(channels, lstm_layers)
+            self.lstm = BLSTM(channels, lstm_layers, use_gru=use_gru)
         else:
             self.lstm = None
 
